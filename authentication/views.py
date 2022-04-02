@@ -92,6 +92,6 @@ class VerifyEmail(generics.GenericAPIView):
                 return Response({'verification_status': 'Email successfully verified'}, status=status.HTTP_200_OK)
             return Response({'verification_status': 'Email already verified'}, status=status.HTTP_200_OK)
         except jwt.ExpiredSignatureError as err:
-            return Response({'error': 'Email verified link Expired'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Email verification link Expired'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.DecodeError as err:
             return Response({'error': 'Invalid Verification Token'}, status=status.HTTP_400_BAD_REQUEST)
