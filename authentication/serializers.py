@@ -17,7 +17,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
     is_verified = serializers.BooleanField(default=False, required=False, read_only=True)
     phone_number = PhoneNumberField(allow_null=False, allow_blank=False)
     password = serializers.CharField(max_length=100, write_only=True)
-    profile_pic = serializers.ImageField(default='default.jpg')
+    profile_pic = serializers.ImageField(default='profile_pics/default.jpg')
 
     class Meta:
         model = User
@@ -93,13 +93,13 @@ class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
             uid = urlsafe_base64_encode(force_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             current_site = get_current_site(request).domain
+            print('CURRENT', current_site)
             relative_url = reverse('reset_password_email') 
-            link = 'http://'+current_site+relative_url+uid+'/'+str(token)
+            link = 'http://'+current_site+'/auth/reset-password/'+'?uid='+uid+'/'+'?token='+str(token)
             email_body = 'Hello '+ user.username + ' Use the link below to reset your password \n' + link
             email_subject = 'Reset your Password'
             email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
             Util.send_email(email_data)
-            print(link)
             return attrs
         raise serializers.ValidationError('You are not a registered user')
 
@@ -118,8 +118,8 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
             password_confirm = attrs.get('password_confirm')
             if password != password_confirm:
                 raise serializers.ValidationError('Password and Confirm Password do not match')
-            token  = self.context.get('token')
-            uid  = self.context.get('uid')
+            token  = self.context.get('token')  # token
+            uid  = self.context.get('uid')      # uid
             pk = smart_str(urlsafe_base64_decode(uid))
             user = User.objects.get(id=pk)
             if not PasswordResetTokenGenerator().check_token(user, token):

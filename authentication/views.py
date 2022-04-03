@@ -13,6 +13,7 @@ from django.conf import settings
 import jwt
 
 
+# Create A User
 class UserCreationView(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
     parser_classes = [FormParser, MultiPartParser]
@@ -35,9 +36,10 @@ class UserCreationView(generics.GenericAPIView):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Get all Users
 class Users(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
-    permission_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
         users = User.objects.all()
@@ -54,9 +56,11 @@ class Users(generics.GenericAPIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
+# Delete a User
 class DeleteUser(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
-    permission_class = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    parser_classes = [FormParser, MultiPartParser]
     def delete(self, request, user_id):
         user = get_object_or_404(User, pk=user_id)
         if user:
@@ -65,6 +69,7 @@ class DeleteUser(generics.GenericAPIView):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+# Update a User
 class UpdateUser(mixins.UpdateModelMixin, generics.GenericAPIView):
     serializer_class = serializers.UserUpdateSerializer
     parser_classes = [FormParser, MultiPartParser]
@@ -79,6 +84,7 @@ class UpdateUser(mixins.UpdateModelMixin, generics.GenericAPIView):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+# Verify a signup User
 class VerifyEmail(generics.GenericAPIView):
     def get(self, request):
         token = request.GET.get('token')
@@ -96,8 +102,10 @@ class VerifyEmail(generics.GenericAPIView):
             return Response({'error': 'Invalid Verification Token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Change a User's Password
 class UserChangePasswordView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [FormParser, MultiPartParser]
     serializer_class = serializers.UserChangePasswordSerializer
     def post(self, request):
         user = request.user
@@ -108,6 +116,7 @@ class UserChangePasswordView(generics.GenericAPIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+# Send an Email to a User requesting to reset their password
 class SendPasswordResetEmail(generics.GenericAPIView):
     serializer_class = serializers.SendPasswordResetEmailSerializer
     def post(self, request):
@@ -118,12 +127,17 @@ class SendPasswordResetEmail(generics.GenericAPIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+# Reset the User's password
 class ResetPasswordView(generics.GenericAPIView):
+    parser_classes = [FormParser, MultiPartParser]
     serializer_class = serializers.ResetPasswordSerializer
-    def post(self, request, uid, token):
+    def post(self, request):
+        uid = request.GET.get('uid').split('/?token=')[0]
+        token = request.GET.get('uid').split('/?token=')[1]
         data = request.data
         serializer = self.serializer_class(data=data, context={'uid': uid, 'token': token})
         if serializer.is_valid():
             return Response({'msg': 'Password reset successfully'}, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'msg': 'Password has already been reset or password reset token expired'}, status=status.HTTP_400_BAD_REQUEST)
+
 
