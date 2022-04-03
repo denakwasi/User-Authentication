@@ -9,4 +9,7 @@ urlpatterns = [
     path('update-user/<str:user_id>/', views.UpdateUser.as_view(), name='update_user'),
     path('delete-user/<str:user_id>/', views.DeleteUser.as_view(), name='delete_user'),
     path('verify-email/', views.VerifyEmail.as_view(), name='verify_email'),
+    path('change-password/', views.UserChangePasswordView.as_view(), name='change_password'),
+    path('reset-password-email/', views.SendPasswordResetEmail.as_view(), name='reset_password_email'),
+    path('reset-password/<uid>/<token>/', views.ResetPasswordView.as_view(), name='reset_password'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

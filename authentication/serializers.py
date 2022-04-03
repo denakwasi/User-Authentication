@@ -1,7 +1,15 @@
+from ast import Pass
 from rest_framework import serializers
 from .models import User
 from phonenumber_field.serializerfields import PhoneNumberField
-
+from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+from .utils import Util
+import jwt
+from django.conf import settings
 
 class UserCreationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=200)
@@ -49,3 +57,76 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number', 'profile_pic']
+
+
+class UserChangePasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=100, style={'input_type':'password'}, write_only=True)
+    password_confirm = serializers.CharField(max_length=100, style={'input_type':'password'}, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['password', 'password_confirm']
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        password_confirm = attrs.get('password_confirm')
+        user  = self.context.get('user')
+        if password != password_confirm:
+            raise serializers.ValidationError('Password and Confirm Password do not match')
+        user.set_password(password)
+        user.save()
+        return attrs
+
+
+class SendPasswordResetEmailSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(max_length=150)
+
+    class Meta:
+        model = User
+        fields = ['email']
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        request = self.context.get('request')
+        if User.objects.all().filter(email=email).exists():
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
+            current_site = get_current_site(request).domain
+            relative_url = reverse('reset_password_email') 
+            link = 'http://'+current_site+relative_url+uid+'/'+str(token)
+            email_body = 'Hello '+ user.username + ' Use the link below to reset your password \n' + link
+            email_subject = 'Reset your Password'
+            email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
+            Util.send_email(email_data)
+            print(link)
+            return attrs
+        raise serializers.ValidationError('You are not a registered user')
+
+
+class ResetPasswordSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=100, style={'input_type':'password'}, write_only=True)
+    password_confirm = serializers.CharField(max_length=100, style={'input_type':'password'}, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['password', 'password_confirm']
+
+    def validate(self, attrs):
+        try:
+            password = attrs.get('password')
+            password_confirm = attrs.get('password_confirm')
+            if password != password_confirm:
+                raise serializers.ValidationError('Password and Confirm Password do not match')
+            token  = self.context.get('token')
+            uid  = self.context.get('uid')
+            pk = smart_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(id=pk)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                raise serializers.ValidationError('Token is not valid or expired')
+            user.set_password(password)
+            user.save()
+            return attrs
+        except DjangoUnicodeDecodeError as err:
+            PasswordResetTokenGenerator().check_token(user, token)
+            raise serializers.ValidationError('Token is not valid or expired')

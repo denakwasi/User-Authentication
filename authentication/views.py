@@ -13,7 +13,6 @@ from django.conf import settings
 import jwt
 
 
-
 class UserCreationView(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
     parser_classes = [FormParser, MultiPartParser]
@@ -95,3 +94,36 @@ class VerifyEmail(generics.GenericAPIView):
             return Response({'error': 'Email verification link Expired'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.DecodeError as err:
             return Response({'error': 'Invalid Verification Token'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserChangePasswordView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.UserChangePasswordSerializer
+    def post(self, request):
+        user = request.user
+        data = request.data
+        serializer = self.serializer_class(data=data, context={'user': user})
+        if serializer.is_valid():
+            return Response({'msg': 'Password changed successfully'}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class SendPasswordResetEmail(generics.GenericAPIView):
+    serializer_class = serializers.SendPasswordResetEmailSerializer
+    def post(self, request):
+        data = request.data
+        serializer = self.serializer_class(data=data, context={'request':request})
+        if serializer.is_valid():
+            return Response({'msg': 'Email has been sent to reset password'}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordView(generics.GenericAPIView):
+    serializer_class = serializers.ResetPasswordSerializer
+    def post(self, request, uid, token):
+        data = request.data
+        serializer = self.serializer_class(data=data, context={'uid': uid, 'token': token})
+        if serializer.is_valid():
+            return Response({'msg': 'Password reset successfully'}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
