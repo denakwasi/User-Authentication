@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, mixins
 from rest_framework.response import Response
 from . import serializers
-from .models import User
+from .models import URLCorsPermit, User
 from .utils import Util
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -13,7 +13,7 @@ from django.conf import settings
 import jwt
 
 
-# Create A User
+# Create A User -> Signup User
 class UserCreationView(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
     parser_classes = [FormParser, MultiPartParser]
@@ -28,7 +28,7 @@ class UserCreationView(generics.GenericAPIView):
             current_site = get_current_site(request).domain
             relative_url = reverse('verify_email') 
             abs_url = 'http://'+current_site+relative_url+'?token='+str(token)
-            email_body = 'Hello '+ user.username + ' Use the link below to verify your email \n' + abs_url
+            email_body = 'Hello '+ user.username + '\nUse the link below to verify your email \n' + abs_url
             email_subject = 'Verify your email'
             email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
             Util.send_email(email_data)
@@ -36,7 +36,7 @@ class UserCreationView(generics.GenericAPIView):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Get all Users
+# Get all Users except the logged in user
 class Users(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
     permission_classes = [IsAuthenticated]
@@ -44,15 +44,17 @@ class Users(generics.GenericAPIView):
         user = request.user
         users = User.objects.all()
         new_users = []
-        newer_users = []
-        for u in users:
-            if u != user:
-                new_users.append(u)
-        for su in new_users:
-            if not su.is_superuser:
-                newer_users.append(su) 
+        if user.is_superuser:
+            for su in users:
+                if su != user:
+                    new_users.append(su)
+        elif not user.is_superuser:
+            for u in users:
+                if u != user:
+                    if not u.is_superuser:
+                        new_users.append(u)
 
-        serializer = self.serializer_class(instance=newer_users, many=True)
+        serializer = self.serializer_class(instance=new_users, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -86,6 +88,7 @@ class UpdateUser(mixins.UpdateModelMixin, generics.GenericAPIView):
 
 # Verify a signup User
 class VerifyEmail(generics.GenericAPIView):
+    serializer_class = serializers.UserCreationSerializer
     def get(self, request):
         token = request.GET.get('token')
         try:
@@ -127,7 +130,7 @@ class SendPasswordResetEmail(generics.GenericAPIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-# Reset the User's password
+# Reset the User's password -> Forgotten Password
 class ResetPasswordView(generics.GenericAPIView):
     parser_classes = [FormParser, MultiPartParser]
     serializer_class = serializers.ResetPasswordSerializer
@@ -141,3 +144,92 @@ class ResetPasswordView(generics.GenericAPIView):
         return Response({'msg': 'Password has already been reset or password reset token expired'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# URLs Cors Permit to access API Endpoints
+class URLCorsPermitView(generics.GenericAPIView):
+    parser_classes = [FormParser, MultiPartParser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    serializer_class = serializers.URLCorsPermitSerializer
+    def post(self, request):
+        data = request.data
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        URLs = settings.CORS_ALLOWED_ORIGINS
+        UCP = URLCorsPermit.objects.all()
+        for url in UCP:
+            URLs.append(url.url)
+        serializer = self.serializer_class(instance=UCP, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+# Update or Delete URL Cors Headers Permit
+class UpdateOrDeleteURLCorsPermitView(generics.GenericAPIView):
+    parser_classes = [FormParser, MultiPartParser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    serializer_class = serializers.URLCorsPermitSerializer
+    def put(self, request, url_id):
+        data = request.data
+        url = get_object_or_404(URLCorsPermit, pk=url_id)
+        serializer = self.serializer_class(data=data, instance=url)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, url_id):
+        url = get_object_or_404(URLCorsPermit, pk=url_id)
+        if url:
+            url.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+# Make a User Admin
+class MakeUserAdmin(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def post(self, request, admin_to_be_id):
+        users = User.objects.all()
+        user = User.objects.get(id=admin_to_be_id)
+        if user:
+            if not user.is_superuser:
+                user.is_superuser = True
+                user.save()
+
+                email_body = 'Congratulation! '+ user.username + '\nYou have been made an Admin.\nYou now have authority to gain limitless access'
+                email_subject = 'Welcome A New Admin'
+                email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
+                Util.send_email(email_data)
+
+                return Response({'msg': f'User with email {user.email} is now an Admin'}, status=status.HTTP_200_OK)
+            elif user.is_superuser:
+                return Response({'msg': f'User with email {user.email} is already an Admin'}, status=status.HTTP_304_NOT_MODIFIED)
+                    
+        return Response(status=status.HTTP_417_EXPECTATION_FAILED) 
+
+
+# Revoke Admin Right
+class MakeUserNonAdmin(generics.GenericAPIView):
+    # serializer_class = serializers.UserCreationSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    def post(self, request, admin_id):
+        users = User.objects.all()
+        user = User.objects.get(id=admin_id)
+        if user:
+            if user.is_superuser:
+                user.is_superuser = False
+                user.save()
+
+                email_body = 'Sorry! '+ user.username + '\nYou are now not an Admin.\nYou are back to being a normal user.'
+                email_subject = 'Admin Right Revoked'
+                email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
+                Util.send_email(email_data)
+
+                return Response({'msg': f'User with email {user.email} is now not an Admin'}, status=status.HTTP_200_OK)
+            elif not user.is_superuser:
+                return Response({'msg': f'User with email {user.email} is not an Admin'}, status=status.HTTP_304_NOT_MODIFIED)
+                    
+        return Response(status=status.HTTP_417_EXPECTATION_FAILED) 

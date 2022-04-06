@@ -1,6 +1,6 @@
 from ast import Pass
 from rest_framework import serializers
-from .models import User
+from .models import User, URLCorsPermit
 from phonenumber_field.serializerfields import PhoneNumberField
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -21,7 +21,7 @@ class UserCreationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'phone_number', 'is_verified', 'password', 'profile_pic']
+        fields = ['id', 'username', 'email', 'phone_number', 'is_verified', 'is_superuser', 'password', 'profile_pic']
 
     def validate(self, attrs):
         username_exists = User.objects.filter(username=attrs['username']).exists()
@@ -130,3 +130,12 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
         except DjangoUnicodeDecodeError as err:
             PasswordResetTokenGenerator().check_token(user, token)
             raise serializers.ValidationError('Token is not valid or expired')
+
+
+
+class URLCorsPermitSerializer(serializers.ModelSerializer):
+    url = serializers.CharField(max_length=300)
+
+    class Meta:
+        model = URLCorsPermit
+        fields = ['id', 'url']

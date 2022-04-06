@@ -46,6 +46,11 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return f'<User: {self.email}>'
 
-    
+
+class URLCorsPermit(models.Model):
+    url = models.CharField(max_length=300)
+
+    def __str__(self) -> str:
+        return f'Url Cors Permit: {self.url}'
 
 
