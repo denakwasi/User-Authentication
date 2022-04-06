@@ -1,6 +1,6 @@
 from ast import Pass
 from rest_framework import serializers
-from .models import User, URLCorsPermit
+from .models import URLCorsPermit
 from phonenumber_field.serializerfields import PhoneNumberField
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -10,6 +10,9 @@ from django.urls import reverse
 from .utils import Util
 import jwt
 from django.conf import settings
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class UserCreationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=200)
