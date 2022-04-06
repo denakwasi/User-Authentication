@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     # Third Party
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
     'drf_yasg',
     'phonenumber_field',
