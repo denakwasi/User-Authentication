@@ -147,7 +147,7 @@ class ResetPasswordView(generics.GenericAPIView):
 # URLs Cors Permit to access API Endpoints
 class URLCorsPermitView(generics.GenericAPIView):
     parser_classes = [FormParser, MultiPartParser]
-    permission_classes = [IsAdminUser, IsAuthenticated]
+    # permission_classes = [IsAdminUser, IsAuthenticated]
     serializer_class = serializers.URLCorsPermitSerializer
     def post(self, request):
         data = request.data
