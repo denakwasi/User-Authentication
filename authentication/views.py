@@ -157,13 +157,13 @@ class URLCorsPermitView(generics.GenericAPIView):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request):
-        URLs = settings.CORS_ALLOWED_ORIGINS
-        UCP = URLCorsPermit.objects.all()
-        for url in UCP:
-            URLs.append(url.url)
-        serializer = self.serializer_class(instance=UCP, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    # def get(self, request):
+    #     URLs = settings.CORS_ALLOWED_ORIGINS
+    #     UCP = URLCorsPermit.objects.all()
+    #     for url in UCP:
+    #         URLs.append(url.url)
+    #     serializer = self.serializer_class(instance=UCP, many=True)
+    #     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 # Update or Delete URL Cors Headers Permit
