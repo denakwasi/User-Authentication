@@ -1,6 +1,6 @@
 from ast import Pass
 from rest_framework import serializers
-from .models import URLCorsPermit
+# from .models import URLCorsPermit
 from phonenumber_field.serializerfields import PhoneNumberField
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -136,9 +136,9 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
 
 
 
-class URLCorsPermitSerializer(serializers.ModelSerializer):
-    url = serializers.CharField(max_length=300)
+# class URLCorsPermitSerializer(serializers.ModelSerializer):
+#     url = serializers.CharField(max_length=300)
 
-    class Meta:
-        model = URLCorsPermit
-        fields = ['id', 'url']
+#     class Meta:
+#         model = URLCorsPermit
+#         fields = ['id', 'url']

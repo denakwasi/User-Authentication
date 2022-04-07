@@ -47,11 +47,11 @@ class User(AbstractUser):
         return f'<User: {self.email}>'
 
 
-class URLCorsPermit(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    url = models.CharField(max_length=300)
+# class URLCorsPermit(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     url = models.CharField(max_length=300)
 
-    def __str__(self) -> str:
-        return f'Url Cors Permit: {self.url} by {self.user.username}'
+#     def __str__(self) -> str:
+#         return f'Url Cors Permit: {self.url} by {self.user.username}'
 
 

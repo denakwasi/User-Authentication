@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, mixins
 from rest_framework.response import Response
 from . import serializers
-from .models import URLCorsPermit, User
+from .models import User
 from .utils import Util
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -145,17 +145,17 @@ class ResetPasswordView(generics.GenericAPIView):
 
 
 # URLs Cors Permit to access API Endpoints
-class URLCorsPermitView(generics.GenericAPIView):
-    parser_classes = [FormParser, MultiPartParser]
-    permission_classes = [IsAdminUser, IsAuthenticated]
-    serializer_class = serializers.URLCorsPermitSerializer
-    def post(self, request):
-        data = request.data
-        serializer = self.serializer_class(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class URLCorsPermitView(generics.GenericAPIView):
+#     parser_classes = [FormParser, MultiPartParser]
+#     permission_classes = [IsAdminUser, IsAuthenticated]
+#     serializer_class = serializers.URLCorsPermitSerializer
+#     def post(self, request):
+#         data = request.data
+#         serializer = self.serializer_class(data=data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(data=serializer.data, status=status.HTTP_200_OK)
+#         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # def get(self, request):
     #     URLs = settings.CORS_ALLOWED_ORIGINS
@@ -167,25 +167,25 @@ class URLCorsPermitView(generics.GenericAPIView):
 
 
 # Update or Delete URL Cors Headers Permit
-class UpdateOrDeleteURLCorsPermitView(generics.GenericAPIView):
-    parser_classes = [FormParser, MultiPartParser]
-    permission_classes = [IsAdminUser, IsAuthenticated]
-    serializer_class = serializers.URLCorsPermitSerializer
-    def put(self, request, url_id):
-        data = request.data
-        url = get_object_or_404(URLCorsPermit, pk=url_id)
-        serializer = self.serializer_class(data=data, instance=url)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_404_NOT_FOUND)
+# class UpdateOrDeleteURLCorsPermitView(generics.GenericAPIView):
+#     parser_classes = [FormParser, MultiPartParser]
+#     permission_classes = [IsAdminUser, IsAuthenticated]
+#     serializer_class = serializers.URLCorsPermitSerializer
+#     def put(self, request, url_id):
+#         data = request.data
+#         url = get_object_or_404(URLCorsPermit, pk=url_id)
+#         serializer = self.serializer_class(data=data, instance=url)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(data=serializer.data, status=status.HTTP_200_OK)
+#         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request, url_id):
-        url = get_object_or_404(URLCorsPermit, pk=url_id)
-        if url:
-            url.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_404_NOT_FOUND)
+#     def delete(self, request, url_id):
+#         url = get_object_or_404(URLCorsPermit, pk=url_id)
+#         if url:
+#             url.delete()
+#             return Response(status=status.HTTP_204_NO_CONTENT)
+#         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 # Make a User Admin
