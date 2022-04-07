@@ -193,4 +193,4 @@ EMAIL_HOST_PASSWORD = 'gcptitifoglrdesi'    # config('EMAIL_HOST_PASSWORD')
 
 
 # Cors Headers
-CORS_ALLOWED_ORIGINS = []
+CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
