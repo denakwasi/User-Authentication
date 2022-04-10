@@ -58,6 +58,15 @@ class Users(generics.GenericAPIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
+class User(generics.GenericAPIView):
+    serializer_class = serializers.UserCreationSerializer
+    permission_classes = [IsAuthenticated]
+    def get(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+        serializer = self.serializer_class(instance=user)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
 # Delete a User
 class DeleteUser(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
