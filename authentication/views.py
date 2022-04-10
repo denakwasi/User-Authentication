@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from rest_framework import generics, status, mixins
 from rest_framework.response import Response
 from . import serializers
@@ -27,7 +27,7 @@ class UserCreationView(generics.GenericAPIView):
             token = RefreshToken.for_user(user)
             current_site = get_current_site(request).domain
             relative_url = reverse('verify_email') 
-            abs_url = 'http://localhost:3000'+relative_url+'?token='+str(token)  # '+current_site+relative_url+'
+            abs_url = 'http://'+current_site+relative_url+'?token='+str(token)  # '+current_site+relative_url+'
             email_body = 'Hello '+ user.username + '\nUse the link below to verify your email \n' + abs_url
             email_subject = 'Verify your email'
             email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
@@ -97,7 +97,8 @@ class VerifyEmail(generics.GenericAPIView):
             if not user.is_verified:
                 user.is_verified = True
                 user.save()
-                return Response({'verification_status': 'Email successfully verified'}, status=status.HTTP_200_OK)
+                res = 'http://localhost:3000/auth/verified'
+                return redirect(res)    # Response({'verification_status': 'Email successfully verified'}, status=status.HTTP_200_OK)
             return Response({'verification_status': 'Email already verified'}, status=status.HTTP_200_OK)
         except jwt.ExpiredSignatureError as err:
             return Response({'error': 'Email verification link Expired'}, status=status.HTTP_400_BAD_REQUEST)
