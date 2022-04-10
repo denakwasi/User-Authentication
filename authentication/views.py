@@ -27,7 +27,7 @@ class UserCreationView(generics.GenericAPIView):
             token = RefreshToken.for_user(user)
             current_site = get_current_site(request).domain
             relative_url = reverse('verify_email') 
-            abs_url = 'http://localhost:3000/verified?token='+str(token)  # '+current_site+relative_url+'
+            abs_url = 'http://localhost:3000/auth/verified?token='+str(token)  # '+current_site+relative_url+'
             email_body = 'Hello '+ user.username + '\nUse the link below to verify your email \n' + abs_url
             email_subject = 'Verify your email'
             email_data = {'email_body': email_body, 'to_email': user.email, 'email_subject': email_subject}
