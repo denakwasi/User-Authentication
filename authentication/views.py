@@ -58,7 +58,7 @@ class Users(generics.GenericAPIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class User(generics.GenericAPIView):
+class User(generics.RetrieveAPIView):
     model = User
     def get_object(self, queryset=None):
         return User.objects.get(pk=self.kwargs.get("user_id"))
