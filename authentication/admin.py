@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User, AccessTokenExp
 
 admin.site.register(User)
-# admin.site.register(URLCorsPermit)
+admin.site.register(AccessTokenExp)

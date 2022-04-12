@@ -46,12 +46,12 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return f'<User: {self.email}>'
 
+from datetime import timedelta
+class AccessTokenExp(models.Model):
+    token_exp_time = models.TimeField(default=timedelta(minutes=3))
+    refresh_exp_time = models.TimeField(default=timedelta(minutes=5))
 
-# class URLCorsPermit(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     url = models.CharField(max_length=300)
-
-#     def __str__(self) -> str:
-#         return f'Url Cors Permit: {self.url} by {self.user.username}'
+    def __str__(self) -> str:
+        return f'Access Expiry Time: {self.token_exp_time}'
 
 

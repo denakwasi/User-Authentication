@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, redirect
 from rest_framework import generics, status, mixins
 from rest_framework.response import Response
 from . import serializers
-from .models import User
+from .models import AccessTokenExp, User
 from .utils import Util
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.conf import settings
 import jwt
 
+from datetime import timedelta
 
 # Create A User -> Signup User
 class UserCreationView(generics.GenericAPIView):
@@ -22,6 +23,13 @@ class UserCreationView(generics.GenericAPIView):
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
+            # ----------Create access token duration--------
+            # import datetime
+            # if AccessTokenExp.DoesNotExist:
+            #     tk = AccessTokenExp.objects.all()
+            #     if len(tk) == 0:
+            #         AccessTokenExp.objects.create(token_exp_time=str(datetime.timedelta(minutes=3)), refresh_exp_time=str(datetime.timedelta(minutes=5)))
+            # ----------------------------------------------
             user_data = serializer.data
             user = get_object_or_404(User, email=user_data['email'])
             token = RefreshToken.for_user(user)
@@ -36,11 +44,17 @@ class UserCreationView(generics.GenericAPIView):
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+settings.SIMPLE_JWT.update({'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5)})
+print(settings.SIMPLE_JWT.get('ACCESS_TOKEN_LIFETIME'))
+
+
 # Get all Users except the logged in user
 class Users(generics.GenericAPIView):
     serializer_class = serializers.UserCreationSerializer
     permission_classes = [IsAuthenticated]
     def get(self, request):
+        # 
+        
         user = request.user
         users = User.objects.all()
         new_users = []
@@ -56,6 +70,7 @@ class Users(generics.GenericAPIView):
 
         serializer = self.serializer_class(instance=new_users, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 
 
 class UserDetail(generics.GenericAPIView):
@@ -243,3 +258,24 @@ class MakeUserNonAdmin(generics.GenericAPIView):
                 return Response({'msg': f'User with email {user.email} is not an Admin'}, status=status.HTTP_304_NOT_MODIFIED)
                     
         return Response(status=status.HTTP_417_EXPECTATION_FAILED) 
+
+
+
+class AccessTokenExpView(generics.GenericAPIView):
+    serializer_class = serializers.AccessTokenExpSerializer
+    parser_classes = [FormParser, MultiPartParser]
+    # permission_classes = [IsAuthenticated, IsAdminUser]
+    def put(self, request):
+        data = request.data
+        first_tk = AccessTokenExp.objects.all()[:1].get()
+        tk = get_object_or_404(AccessTokenExp, pk=first_tk.id)
+        serializer = self.serializer_class(data=data, instance=tk)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 200, 'msg': 'Access token duration set successfully'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        access_token = AccessTokenExp.objects.all()
+        serializer = self.serializer_class(instance=access_token, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)

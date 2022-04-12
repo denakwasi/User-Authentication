@@ -76,13 +76,17 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
 }
+
+# SIMPLE_JWT.update({'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5)})
 
 
 SWAGGER_SETTINGS = {
