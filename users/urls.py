@@ -5,6 +5,8 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 
 schema_view = get_schema_view(
@@ -22,9 +24,12 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('auth/', include('authentication.urls')),
-    path('auth/', include('djoser.urls.jwt')),
+   path('admin/', admin.site.urls),
+   path('auth/', include('authentication.urls')),
+   path('auth/', include('djoser.urls.jwt')),
+   path('auth/token/', TokenObtainPairView.as_view(), name='token'),
+   path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 
     # Swagger docs
    path('swagger/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
