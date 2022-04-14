@@ -25,7 +25,7 @@ def get_tokens_for_user(request):
 
     return Response({ 
        'refresh': str(refresh),
-       'access': str(refresh.access_token),
+      #  'access': str(refresh.access_token),
     })
 
 schema_view = get_schema_view(
