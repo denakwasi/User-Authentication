@@ -25,7 +25,7 @@ def get_tokens_for_user(request):
 
     return Response({ 
        'refresh': str(refresh),
-      #  'access': str(refresh.access_token),
+       'access': str(refresh.access_token),
     })
    
 
@@ -51,7 +51,6 @@ urlpatterns = [
    # path('auth/token/', TokenObtainPairView.as_view(), name='token'),
    # path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
    # 
-   path('auth/token/', get_tokens_for_user, name='token'),
    path('auth/refresh/', get_tokens_for_user, name='refresh'),
 
    # Swagger docs
