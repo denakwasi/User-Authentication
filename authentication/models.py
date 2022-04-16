@@ -1,5 +1,4 @@
 from enum import unique
-from re import L
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
@@ -46,12 +45,12 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return f'<User: {self.email}>'
 
-from datetime import timedelta
-class AccessTokenExp(models.Model):
-    token_exp_time = models.TimeField(default=timedelta(minutes=3))
-    refresh_exp_time = models.TimeField(default=timedelta(minutes=5))
+# from datetime import timedelta
+# class AccessTokenExp(models.Model):
+#     token_exp_time = models.TimeField(default=timedelta(minutes=3))
+#     refresh_exp_time = models.TimeField(default=timedelta(minutes=5))
 
-    def __str__(self) -> str:
-        return f'Access Expiry Time: {self.token_exp_time}'
+#     def __str__(self) -> str:
+#         return f'Access Expiry Time: {self.token_exp_time}'
 
 

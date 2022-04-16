@@ -1,6 +1,5 @@
 from ast import Pass
 from rest_framework import serializers
-from .models import AccessTokenExp
 from phonenumber_field.serializerfields import PhoneNumberField
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -135,11 +134,11 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Token is not valid or expired')
 
 
-from datetime import timedelta
-class AccessTokenExpSerializer(serializers.ModelSerializer):
-    token_exp_time = serializers.TimeField(default=timedelta(minutes=3))
-    refresh_exp_time = serializers.TimeField(default=timedelta(minutes=3))
+# from datetime import timedelta
+# class AccessTokenExpSerializer(serializers.ModelSerializer):
+#     token_exp_time = serializers.TimeField(default=timedelta(minutes=3))
+#     refresh_exp_time = serializers.TimeField(default=timedelta(minutes=3))
      
-    class Meta:
-        model = AccessTokenExp
-        fields = ['id', 'token_exp_time', 'refresh_exp_time']
+#     class Meta:
+#         model = AccessTokenExp
+#         fields = ['id', 'token_exp_time', 'refresh_exp_time']

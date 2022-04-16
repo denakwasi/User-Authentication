@@ -12,21 +12,21 @@ from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-User = get_user_model()
+# User = get_user_model()
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_tokens_for_user(request):
+# @api_view(['GET'])
+# @permission_classes([AllowAny])
+# def get_tokens_for_user(request):
 
-    # find the user base in params
-    user = User.objects.first()
+#     # find the user base in params
+#     user = User.objects.first()
 
-    refresh = RefreshToken.for_user(user)
+#     refresh = RefreshToken.for_user(user)
 
-    return Response({ 
-       'refresh': str(refresh),
-       'access': str(refresh.access_token),
-    })
+#     return Response({ 
+#        'refresh': str(refresh),
+#        'access': str(refresh.access_token),
+#     })
    
 
 schema_view = get_schema_view(
@@ -51,7 +51,7 @@ urlpatterns = [
    # path('auth/token/', TokenObtainPairView.as_view(), name='token'),
    # path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
    # 
-   path('auth/refresh/', get_tokens_for_user, name='refresh'),
+   # path('auth/refresh/', get_tokens_for_user, name='refresh'),
 
    # Swagger docs
    path('swagger/', schema_view.without_ui(cache_timeout=0), name='schema-json'),

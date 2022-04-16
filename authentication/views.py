@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, redirect
 from rest_framework import generics, status, mixins
 from rest_framework.response import Response
 from . import serializers
-from .models import AccessTokenExp, User
+from .models import User
 from .utils import Util
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -261,21 +261,21 @@ class MakeUserNonAdmin(generics.GenericAPIView):
 
 
 
-class AccessTokenExpView(generics.GenericAPIView):
-    serializer_class = serializers.AccessTokenExpSerializer
-    parser_classes = [FormParser, MultiPartParser]
-    # permission_classes = [IsAuthenticated, IsAdminUser]
-    def put(self, request):
-        data = request.data
-        first_tk = AccessTokenExp.objects.all()[:1].get()
-        tk = get_object_or_404(AccessTokenExp, pk=first_tk.id)
-        serializer = self.serializer_class(data=data, instance=tk)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'status': 200, 'msg': 'Access token duration set successfully'})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class AccessTokenExpView(generics.GenericAPIView):
+#     serializer_class = serializers.AccessTokenExpSerializer
+#     parser_classes = [FormParser, MultiPartParser]
+#     # permission_classes = [IsAuthenticated, IsAdminUser]
+#     def put(self, request):
+#         data = request.data
+#         first_tk = AccessTokenExp.objects.all()[:1].get()
+#         tk = get_object_or_404(AccessTokenExp, pk=first_tk.id)
+#         serializer = self.serializer_class(data=data, instance=tk)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({'status': 200, 'msg': 'Access token duration set successfully'})
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request):
-        access_token = AccessTokenExp.objects.all()
-        serializer = self.serializer_class(instance=access_token, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+#     def get(self, request):
+#         access_token = AccessTokenExp.objects.all()
+#         serializer = self.serializer_class(instance=access_token, many=True)
+#         return Response(data=serializer.data, status=status.HTTP_200_OK)
